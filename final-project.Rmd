@@ -22,6 +22,14 @@ The development speed of India's automobile industry is fast in the world. Due t
 ### Our interests
 Nowadays, more and more people consider purchasing a used car instead of buying a new one, since it is more feasible and a better investment. However, there are also many frauds and unfair pricing in the market. The most important part of the transaction (buying as well as selling) is making sure the price is fair.
 
+India has a huge market for the used car business. According to the study on the sector, the Indian used car industry possesses significant potential, which was valued at USD 24.24 billion in 2019. Therefore, this dataset should contain much useful information, and be able to help us to construct an efficient model that can predict used/secondhand car prices given some predictor variables. 
+
+### Data File Description
+Our dataset focuses on several characteristics of used cars in India. It contains 6018 observations and 13 variables, including several categorical variables, such as Transmission Types and Fuel Types. Also, it has continuous variables: Mileage, Year and Power and discrete variable: Number of Seats. For this project, the Used Car Price would be the numeric response variable and the left being dependent variables. 
+
+### Data File Link
+The data file can retrived from https://www.kaggle.com/avikasliwal/used-cars-price-prediction?select=train-data.csv as "train-data.csv."
+
 ## Import Dataset
 
 ```{r}
