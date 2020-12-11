@@ -30,6 +30,7 @@ Our dataset focuses on several characteristics of used cars in India. It contain
 ### Data File Link
 The data file can retrived from https://www.kaggle.com/avikasliwal/used-cars-price-prediction?select=train-data.csv as "train-data.csv."
 
+
 ## Methods
 
 ### Original Data Profile
@@ -73,9 +74,27 @@ plot(Price ~ Year, data = original, pch = 20, col = "darkgreen", main = "Price v
 ```
 
 ### Additional Data Preparation
+For the original data to be used, it should be cleaned.
 
+Data cleaning starts with the original csv file, including remove all the units behind the values and change all 0 values to null for convenience. The `Location` and `Name` are removed because they contain miscellaneous values that cannot be categorized. `New_Price` is removed because there are too few values to be used. It is also necessary to remove some values for other variables, such as reslove the units differences for Mileage. After the above alterations, it forms `used_car_cleaned.csv`. 
 
+The next step is to clean rows whihch cotain null values in its data.
+```{r}
+used_car = read.csv("used_car_cleaned.csv")
+ucar = na.omit(used_car)
+summary(ucar)
+nrow(ucar)
+ncol(ucar)
+```
+Then the data contains 10 variables and 5759 entries.
 
+Finally, it is needed to make factor variables.
+```{r}
+ucar$Fuel_Type = as.factor(ucar$Fuel_Type)
+ucar$Transmission = as.factor(ucar$Transmission)
+ucar$Owner_Type = as.factor(ucar$Owner_Type)
+ucar$Seats = as.factor(ucar$Seats)
+```
 
 ## Model establishment and selection
 
