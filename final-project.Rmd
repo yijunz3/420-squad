@@ -1,16 +1,26 @@
 ---
-title: 'STAT 420 Final Project'
-author: "Yijun Zhao, "
-date: 'December 14, 2020'
+title: 'Indian Used Cars Price Prediction - Final Project'
+date: '12/1/2020'
 output:
   html_document:
     theme: readable
     toc: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+options(scipen = 1, digits = 4, width = 80, fig.align = "center")
 ```
+
+# Summary Report
+
+## Introduction
+
+### Background
+
+The development speed of India's automobile industry is fast in the world. Due to India's national conditions, poor families account for a large proportion of India. Therefore, because of the price advantage, many people will buy second-hand cars instead of first-hand new cars. This has also promoted the development of the Indian used car market. In India, there are as many as 750 organized used car sales outlets, and this number will continue to grow.
+
+### Our interests
+Nowadays, more and more people consider purchasing a used car instead of buying a new one, since it is more feasible and a better investment. However, there are also many frauds and unfair pricing in the market. The most important part of the transaction (buying as well as selling) is making sure the price is fair.
 
 ## Import Dataset
 
