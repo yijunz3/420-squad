@@ -25,7 +25,29 @@ Nowadays, more and more people consider purchasing a used car instead of buying 
 India has a huge market for the used car business. According to the study on the sector, the Indian used car industry possesses significant potential, which was valued at USD 24.24 billion in 2019. Therefore, this dataset should contain much useful information, and be able to help us to construct an efficient model that can predict used/secondhand car prices given some predictor variables. 
 
 ### Data File Description
-Our dataset focuses on several characteristics of used cars in India. It contains 6018 observations and 13 variables, including several categorical variables, such as Transmission Types and Fuel Types. Also, it has continuous variables: Mileage, Year and Power and discrete variable: Number of Seats. For this project, the Used Car Price would be the numeric response variable and the left being dependent variables. 
+Our dataset focuses on several characteristics of used cars in India. It contains 6018 observations and 13 variables:
+
+1 numeric response variable:
+
+- `Price`: used car prices in INR Lakhs
+
+6 categorical variables:
+
+- `Name`: the car model names
+- `Location`: the location of the car sold
+- `Fuel_Type`: `Diesel`, `Petrol`, `CNG`
+- `Transmission`: `Manual`, `Automatic`
+- `Owner_Type`: `First`, `Second`, and some others
+- `Seats`: `5`, `7` and some other number of seats
+
+6 numeric variables:
+
+- `Year`: car edition year from 1998 to 2019
+- `Kilometers_Driven`: the kilometers already driven of the car in km.
+- `Mileage`:  car mileage in kmpl or km/kg
+- `Engine`:  the engine volume in cc
+- `Power`: the car's power in bhp
+- `New Price`: the car price when it's new in INR Lakhs
 
 ### Data File Link
 The data file can retrived from https://www.kaggle.com/avikasliwal/used-cars-price-prediction?select=train-data.csv as "train-data.csv."
