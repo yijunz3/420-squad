@@ -48,7 +48,7 @@ There are 6018 observations and 13 variables:
 - `Location`: the location of the car sold
 - `Fuel_Type`: `Diesel`, `Petrol`, `CNG`
 - `Transmission`: `Manual`, `Automatic`
-- `Owner_Type`: `First`, `Second`, and some others
+- `Owner_Type`: `First`, `Second`, `Third`, `Fourth & Above`
 - `Seats`: `5`, `7` and some other number of seats
 
 6 numeric variables:
@@ -82,7 +82,7 @@ The next step is to clean rows whihch cotain null values in its data.
 ```{r}
 used_car = read.csv("used_car_cleaned.csv")
 ucar = na.omit(used_car)
-summary(ucar)
+str(ucar)
 nrow(ucar)
 ncol(ucar)
 ```
@@ -96,9 +96,32 @@ ucar$Owner_Type = as.factor(ucar$Owner_Type)
 ucar$Seats = as.factor(ucar$Seats)
 ```
 
-## Model establishment and selection
+### Model establishment and selection
 
+The modelling process can start with a full addiditive model with backward aic for a good model determination.
 ```{r}
-#Multiple linear regression, Dummy variables, Interaction, Residual diagnostics, Outlier diagnostics, Transformations, Polynomial regression, Model selection, etc.
+car_add = lm(Price ~., data = ucar)
+add_back_aic = step(car_add, direction = "backward", trace = 0)
+coef(add_back_aic)
 ```
+
+The next step is to develop a full first order and second order polynomial model with backward aic for a good model determination.
+```{r}
+car_poly = lm(Price ~.+ I(Kilometers_Driven^2) +I(Mileage^2) + I(Engine^2) +I(Power^2), data = ucar)
+poly_back_aic = step(car_poly, direction = "backward", trace = 0)
+coef(poly_back_aic)
+```
+
+Finally, an full interaction model with backward aic for a good model determination can be developed.
+```{r}
+car_int = lm(Price ~.^2, data = ucar)
+int_back_aic = step(car_int, direction = "backward", trace = 0)
+coef(int_back_aic)
+```
+
+## Results
+
+## Discussion
+
+## Appendix
 
