@@ -28,7 +28,7 @@ India has a huge market for the used car business. According to the study on the
 Our dataset focuses on several characteristics of used cars in India. It contains 6018 observations and 13 variables, including several categorical variables, such as Transmission Types and Fuel Types. Also, it has continuous variables: Mileage, Year and Power and discrete variable: Number of Seats. For this project, the Used Car Price would be the numeric response variable and the left being dependent variables. 
 
 ### Data File Link
-The data file can retrived from https://www.kaggle.com/avikasliwal/used-cars-price-prediction?select=train-data.csv as "train-data.csv."
+The data file can be retrieved from https://www.kaggle.com/avikasliwal/used-cars-price-prediction?select=train-data.csv as "train-data.csv."
 
 
 ## Methods
