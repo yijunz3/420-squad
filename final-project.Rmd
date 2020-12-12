@@ -187,4 +187,23 @@ Since the p-value for both Breusch-Pagan test and Shapiro-Wilk test are very sma
 ## Discussion
 
 ## Appendix
+The follwoing code is for `Price` vs numeric variables plots of the original data file.
+```{r,eval=FALSE}
+plot(Price ~ Kilometers_Driven, data = original, pch = 20, col = "darkgreen",main = "Price vs Kilometers_Driven", cex = 1)
+plot(Price ~ Power, data = original, pch = 20, col = "darkgreen", main = "Price vs Power", cex = 1)
+plot(Price ~ Mileage, data = original, pch = 20, col = "darkgreen", main = "Price vs Mileage", cex = 1)
+plot(Price ~ Engine, data = original, pch = 20, col = "darkgreen", main = "Price vs Engine", cex = 1)
+plot(Price ~ Year, data = original, pch = 20, col = "darkgreen", main = "Price vs Year", cex = 1)
+```
 
+The following code is for Q-Q plots
+```{r, eval = FALSE}
+qqnorm(resid(add_back_aic), main = "Normal Q-Q Plot Before Removing Influential Points", col = "darkgrey")
+qqline(resid(add_back_aic), col = "dodgerblue", lwd = 2)
+
+cook = cooks.distance(add_back_aic)
+add_back_aic2 = lm(Price ~., data = ucar, subset = (cook < 4 / length(cook)))
+
+qqnorm(resid(add_back_aic2), main = "Normal Q-Q Plot After Removing Influential Points", col = "darkgrey")
+qqline(resid(add_back_aic2), col = "dodgerblue", lwd = 2)
+```
