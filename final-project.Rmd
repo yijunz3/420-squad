@@ -125,7 +125,7 @@ qqline(resid(add_back_aic2), col = "dodgerblue", lwd = 2)
 shapiro.test(resid(add_back_aic2))
 bptest(add_back_aic2)
 ```
-As it can be seen from the above two Q-Q plots. Before removing the influential points, the Q-Q plot suggests severe violation of normality assumption, as the many points are far off the line. After removing the influential points, the Q-Q plot is slightly better, however the Shapiro-Wilk test still suggests a viloation of normality, and Breusch-Pagan test also still shows a violation of constant variance.
+As it can be seen from the above two Q-Q plots. Before removing the influential points, the Q-Q plot suggests severe violation of normality assumption, as the many points are far off the line. After removing the influential points, the Q-Q plot is slightly better, however the Shapiro-Wilk test still suggests a violation of normality, and Breusch-Pagan test also still shows a violation of constant variance.
 
 <br />
 
@@ -147,7 +147,7 @@ bptest(poly_back_aic2)
 
 <br />
 
-In addition to above models, an full interaction model with backward aic for a good model determination can be developed, and model assumptions should be checked.
+In addition to above models, a full interaction model with backward aic for a good model determination can be developed, and model assumptions should be checked.
 ```{r}
 car_int = lm(Price ~.^2, data = ucar)
 int_back_aic = step(car_int, direction = "backward", trace = 0)
@@ -181,13 +181,63 @@ shapiro.test(resid(integ_model2))
 Since the p-value for both Breusch-Pagan test and Shapiro-Wilk test are very small, the model assumption of constant variance and normality of errors are violated. Also, removing influential points does not fix the violations either, as shown above.
 
 ### Model Selection
+To begin with, we can use information from the summary() function to compare Adjusted $R_2$ values of the models. 
+
+```{r}
+summary(car_add)$adj.r.squared
+summary(add_back_aic)$adj.r.squared
+summary(add_back_aic2)$adj.r.squared
+summary(car_poly)$adj.r.squared
+summary(poly_back_aic)$adj.r.squared
+summary(poly_back_aic2)$adj.r.squared
+summary(car_int)$adj.r.squared
+summary(int_back_aic)$adj.r.squared
+summary(int_back_aic2)$adj.r.squared
+summary(integ_model)$adj.r.squared
+summary(integ_model2)$adj.r.squared
+
+```
+Note that the modified interaction model "int_back_aic2" is preferred since it has the greatest adjusted $R_2$ value.
+
+We can also calculate the LOOCV RMSE for each,
+```{r}
+calc_loocv_rmse = function(model) {
+  sqrt(mean((resid(model) / (1 - hatvalues(model))) ^ 2))
+}
+```
+
+```{r}
+calc_loocv_rmse(car_add)
+calc_loocv_rmse(car_int)
+calc_loocv_rmse(car_poly)
+calc_loocv_rmse(add_back_aic2)
+calc_loocv_rmse(poly_back_aic2)
+calc_loocv_rmse(int_back_aic2)
+calc_loocv_rmse(add_back_aic)
+calc_loocv_rmse(poly_back_aic)
+calc_loocv_rmse(int_back_aic)
+calc_loocv_rmse(integ_model)
+calc_loocv_rmse(integ_model2)
+
+```
+We see that the modified polynomial model is the good model for prediction, since it achieves the best LOOCV RMSE, but may not be the best model for explanation, since it is not the smallest.
+
+Since the modified interaction model and the modified polynomial model are both of good performance, we are interested in keeping models as small as possible, since smaller models are easy to interpret. 
+
+```{r}
+length(coef(int_back_aic2))
+length(coef(poly_back_aic2))
+```
+
+Therefore, we would like to select the model "poly_back_aic2" as our final model.
+
 
 ## Results
 
 ## Discussion
 
 ## Appendix
-The follwoing code is for `Price` vs numeric variables plots of the original data file.
+The following code is for `Price` vs numeric variables plots of the original data file.
 ```{r,eval=FALSE}
 plot(Price ~ Kilometers_Driven, data = original, pch = 20, col = "darkgreen",main = "Price vs Kilometers_Driven", cex = 1)
 plot(Price ~ Power, data = original, pch = 20, col = "darkgreen", main = "Price vs Power", cex = 1)
