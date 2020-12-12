@@ -76,9 +76,9 @@ plot(Price ~ Year, data = original, pch = 20, col = "darkgreen", main = "Price v
 ### Additional Data Preparation
 For the original data to be used, it should be cleaned.
 
-Data cleaning starts with the original csv file, including remove all the units behind the values and change all 0 values to null for convenience. The `Location` and `Name` are removed because they contain miscellaneous values that cannot be categorized. `New_Price` is removed because there are too few values to be used. It is also necessary to remove some values for other variables, such as reslove the units differences for Mileage. After the above alterations, it forms `used_car_cleaned.csv`. 
+Data cleaning starts with the original csv file, including remove all the units behind the values and change all 0 values to null for convenience. The `Location` and `Name` are removed because they contain miscellaneous values that cannot be categorized. `New_Price` is removed because there are too few values to be used. It is also necessary to remove some values for other variables, such as resolve the units differences for Mileage. After the above alterations, it forms `used_car_cleaned.csv`. 
 
-The next step is to clean rows whihch cotain null values in its data.
+The next step is to clean rows which contain null values.
 ```{r}
 used_car = read.csv("used_car_cleaned.csv")
 ucar = na.omit(used_car)
@@ -95,7 +95,7 @@ ucar$Seats = as.factor(ucar$Seats)
 ```
 
 ### Model establishment 
-The modelling process can start with a full addiditive model with backward aic for a good model determination.
+The modeling process can start with a full additive model with backward AIC for a good model determination.
 ```{r}
 car_add = lm(Price ~., data = ucar)
 add_back_aic = step(car_add, direction = "backward", trace = 0)
@@ -147,7 +147,7 @@ bptest(poly_back_aic2)
 
 <br />
 
-In addition to above models, an full interaction model with backward aic for a good model determination can be developed, and model assumptions should be checked
+In addition to above models, an full interaction model with backward aic for a good model determination can be developed, and model assumptions should be checked.
 ```{r}
 car_int = lm(Price ~.^2, data = ucar)
 int_back_aic = step(car_int, direction = "backward", trace = 0)
