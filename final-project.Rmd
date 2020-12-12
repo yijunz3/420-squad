@@ -66,7 +66,7 @@ original = read.csv("used_car.csv")
 summary(original)
 ```
 ```{r, echo = FALSE}
-plot(Price ~ Kilometers_Driven, data = original, pch = 20, col = "darkgreen",main = "Price vs Kilometes_Driven", cex = 1)
+plot(Price ~ Kilometers_Driven, data = original, pch = 20, col = "darkgreen",main = "Price vs Kilometers_Driven", cex = 1)
 plot(Price ~ Power, data = original, pch = 20, col = "darkgreen", main = "Price vs Power", cex = 1)
 plot(Price ~ Mileage, data = original, pch = 20, col = "darkgreen", main = "Price vs Mileage", cex = 1)
 plot(Price ~ Engine, data = original, pch = 20, col = "darkgreen", main = "Price vs Engine", cex = 1)
@@ -83,10 +83,8 @@ The next step is to clean rows whihch cotain null values in its data.
 used_car = read.csv("used_car_cleaned.csv")
 ucar = na.omit(used_car)
 str(ucar)
-nrow(ucar)
-ncol(ucar)
 ```
-Then the data contains 10 variables and 5759 entries.
+Then the data contains 10 variables and 4981 entries.
 
 Finally, it is needed to make factor variables.
 ```{r}
