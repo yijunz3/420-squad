@@ -96,28 +96,93 @@ ucar$Owner_Type = as.factor(ucar$Owner_Type)
 ucar$Seats = as.factor(ucar$Seats)
 ```
 
-### Model establishment and selection
-
+### Model establishment 
 The modelling process can start with a full addiditive model with backward aic for a good model determination.
 ```{r}
 car_add = lm(Price ~., data = ucar)
 add_back_aic = step(car_add, direction = "backward", trace = 0)
 coef(add_back_aic)
 ```
+Then, it is always important to check for model assumptions
+```{r}
+library(lmtest)
+bptest(add_back_aic)
+shapiro.test(resid(add_back_aic))
+```
+Since the p-value for both Breusch-Pagan test and Shapiro-Wilk test are very small, the model assumption of constant variance and normality of errors are violated.
 
-The next step is to develop a full first order and second order polynomial model with backward aic for a good model determination.
+We can try to fix the violation of the normality assumption. 
+```{r, echo = FALSE}
+qqnorm(resid(add_back_aic), main = "Normal Q-Q Plot Before Removing Influential Points", col = "darkgrey")
+qqline(resid(add_back_aic), col = "dodgerblue", lwd = 2)
+
+cook = cooks.distance(add_back_aic)
+add_back_aic2 = lm(Price ~., data = ucar, subset = (cook < 4 / length(cook)))
+
+qqnorm(resid(add_back_aic2), main = "Normal Q-Q Plot After Removing Influential Points", col = "darkgrey")
+qqline(resid(add_back_aic2), col = "dodgerblue", lwd = 2)
+```
+
+```{r}
+shapiro.test(resid(add_back_aic2))
+bptest(add_back_aic2)
+```
+As it can be seen from the above two Q-Q plots. Before removing the influential points, the Q-Q plot suggests severe violation of normality assumption, as the many points are far off the line. After removing the influential points, the Q-Q plot is slightly better, however the Shapiro-Wilk test still suggests a viloation of normality, and Breusch-Pagan test also still shows a violation of constant variance.
+
+<br />
+
+The next step is to develop a full first order and second order polynomial model with backward aic for a good model determination and check for the model assumptions.
 ```{r}
 car_poly = lm(Price ~.+ I(Kilometers_Driven^2) +I(Mileage^2) + I(Engine^2) +I(Power^2), data = ucar)
 poly_back_aic = step(car_poly, direction = "backward", trace = 0)
 coef(poly_back_aic)
+bptest(poly_back_aic)
+shapiro.test(resid(poly_back_aic))
+```
+Since the p-value for both Breusch-Pagan test and Shapiro-Wilk test are very small, the model assumption of constant variance and normality of errors are violated. Also, removing influential points does not fix the violations either, as shown below.
+
+```{r}
+poly_back_aic2 = lm(Price ~.+ I(Kilometers_Driven^2) +I(Mileage^2) + I(Engine^2) +I(Power^2), data = ucar, subset = (cook < 4 / length(cook)))
+shapiro.test(resid(poly_back_aic2))
+bptest(poly_back_aic2)
 ```
 
-Finally, an full interaction model with backward aic for a good model determination can be developed.
+<br />
+
+In addition to above models, an full interaction model with backward aic for a good model determination can be developed, and model assumptions should be checked
 ```{r}
 car_int = lm(Price ~.^2, data = ucar)
 int_back_aic = step(car_int, direction = "backward", trace = 0)
 coef(int_back_aic)
+bptest(int_back_aic)
+shapiro.test(resid(int_back_aic))
 ```
+Since the p-value for both Breusch-Pagan test and Shapiro-Wilk test are very small, the model assumption of constant variance and normality of errors are violated. Also, removing influential points does not fix the violations either, as shown below.
+
+```{r}
+int_back_aic2 = lm(Price ~.^2, data = ucar, subset = (cook < 4 / length(cook)))
+shapiro.test(resid(int_back_aic2))
+bptest(int_back_aic2)
+```
+
+<br />
+
+Finally, we integrate all variable selected from the above process into one integrated model, and repeat the above process for model assumption violations check and try to fix the violations by removing influential points if there is any.
+
+```{r}
+integ_model = lm(Price ~.^2 - Engine + I(Kilometers_Driven^2) +I(Mileage^2) + I(Engine^2) - Year: Engine - Year:Owner_Type - Kilometers_Driven:Owner_Type - Kilometers_Driven:Power - Fuel_Type:Transmission - Fuel_Type:Owner_Type - Fuel_Type:Mileage - Transmission:Owner_Type - Transmission:Engine - Owner_Type:Mileage - Owner_Type:Engine - Owner_Type:Power - Owner_Type:Seats - Mileage:Engine , data = ucar)
+summary(integ_model)
+bptest(integ_model)
+shapiro.test(resid(integ_model))
+
+cook = cooks.distance(integ_model)
+integ_model2 = lm(Price ~., data = ucar, subset = (cook < 4 / length(cook)))
+bptest(integ_model2)
+shapiro.test(resid(integ_model2))
+```
+Since the p-value for both Breusch-Pagan test and Shapiro-Wilk test are very small, the model assumption of constant variance and normality of errors are violated. Also, removing influential points does not fix the violations either, as shown above.
+
+### Model Selection
 
 ## Results
 
