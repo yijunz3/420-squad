@@ -140,6 +140,7 @@ shapiro.test(resid(poly_back_aic))
 Since the p-value for both Breusch-Pagan test and Shapiro-Wilk test are very small, the model assumption of constant variance and normality of errors are violated. Also, removing influential points does not fix the violations either, as shown below.
 
 ```{r}
+cook = cooks.distance(poly_back_aic)
 poly_back_aic2 = lm(Price ~.+ I(Kilometers_Driven^2) +I(Mileage^2) + I(Engine^2) +I(Power^2), data = ucar, subset = (cook < 4 / length(cook)))
 shapiro.test(resid(poly_back_aic2))
 bptest(poly_back_aic2)
@@ -158,6 +159,7 @@ shapiro.test(resid(int_back_aic))
 Since the p-value for both Breusch-Pagan test and Shapiro-Wilk test are very small, the model assumption of constant variance and normality of errors are violated. Also, removing influential points does not fix the violations either, as shown below.
 
 ```{r}
+cook = cooks.distance(int_back_aic)
 int_back_aic2 = lm(Price ~.^2, data = ucar, subset = (cook < 4 / length(cook)))
 shapiro.test(resid(int_back_aic2))
 bptest(int_back_aic2)
@@ -220,9 +222,9 @@ calc_loocv_rmse(integ_model)
 calc_loocv_rmse(integ_model2)
 
 ```
-We see that the modified polynomial model is the good model for prediction, since it achieves the best LOOCV RMSE, but may not be the best model for explanation, since it is not the smallest.
+We see that the modified polynomial model is the good model for prediction, since it achieves the smallest LOOCV RMSE, but may not be the best model for explanation.
 
-Since the modified interaction model and the modified polynomial model are both of good performance, we are interested in keeping models as small as possible, since smaller models are easy to interpret. 
+Since the modified interaction model and the modified polynomial model are both of good performance, we are interested in keeping models as small as possible, since smaller models are easier to interpret. 
 
 ```{r}
 length(coef(int_back_aic2))
