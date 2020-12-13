@@ -1,5 +1,6 @@
 ---
 title: 'Indian Used Cars Price Prediction - Final Project'
+author: "Jiazhen Li, Yijun Zhao, Heming Huang, Hanwen Hu"
 date: '12/1/2020'
 output:
   html_document:
@@ -65,6 +66,7 @@ The following displays the summary of the original data file and plots of repson
 original = read.csv("used_car.csv")
 summary(original)
 ```
+
 ```{r, echo = FALSE}
 plot(Price ~ Kilometers_Driven, data = original, pch = 20, col = "darkgreen",main = "Price vs Kilometers_Driven", cex = 1)
 plot(Price ~ Power, data = original, pch = 20, col = "darkgreen", main = "Price vs Power", cex = 1)
@@ -78,7 +80,7 @@ For the original data to be used, it should be cleaned.
 
 Data cleaning starts with the original csv file, including remove all the units behind the values and change all 0 values to null for convenience. The `Location` and `Name` are removed because they contain miscellaneous values that cannot be categorized. `New_Price` is removed because there are too few values to be used. It is also necessary to remove some values for other variables, such as resolve the units differences for Mileage. After the above alterations, it forms `used_car_cleaned.csv`. 
 
-The next step is to clean rows which contain null values.
+The next step is to clean rows which contain null values in its data.
 ```{r}
 used_car = read.csv("used_car_cleaned.csv")
 ucar = na.omit(used_car)
@@ -95,7 +97,7 @@ ucar$Seats = as.factor(ucar$Seats)
 ```
 
 ### Model establishment 
-The modeling process can start with a full additive model with backward AIC for a good model determination.
+The modeling process can start with a full additive model with backward aic for a good model determination.
 ```{r}
 car_add = lm(Price ~., data = ucar)
 add_back_aic = step(car_add, direction = "backward", trace = 0)
@@ -150,7 +152,7 @@ bptest(poly_back_aic2)
 
 <br />
 
-In addition to above models, a full interaction model with backward aic for a good model determination can be developed, and model assumptions should be checked.
+In addition to above models, an full interaction model with backward aic for a good model determination can be developed, and model assumptions should be checked
 ```{r}
 car_int = lm(Price ~.^2, data = ucar)
 int_back_aic = step(car_int, direction = "backward", trace = 0)
@@ -199,7 +201,6 @@ summary(int_back_aic)$adj.r.squared
 summary(int_back_aic2)$adj.r.squared
 summary(integ_model)$adj.r.squared
 summary(integ_model2)$adj.r.squared
-
 ```
 Note that the modified interaction model "int_back_aic2" is preferred since it has the greatest adjusted $R_2$ value.
 
@@ -222,9 +223,8 @@ calc_loocv_rmse(poly_back_aic)
 calc_loocv_rmse(int_back_aic)
 calc_loocv_rmse(integ_model)
 calc_loocv_rmse(integ_model2)
-
 ```
-We see that the modified polynomial model is the good model for prediction, since it achieves the smallest LOOCV RMSE, but may not be the best model for explanation.
+We see that the modified polynomial model is a good model for prediction, since it achieves the smallest LOOCV RMSE, but may not be the best model for explanation.
 
 Since the modified interaction model and the modified polynomial model are both of good performance, we are interested in keeping models as small as possible, since smaller models are easier to interpret. 
 
@@ -237,6 +237,64 @@ Therefore, we would like to select the model "poly_back_aic2" as our final model
 
 
 ## Results
+
+The primary object of this project is to use Indian's used car data to predict used/secondhand car prices given some predictor variables. 
+
+The original dataset contains 6018 observations and 13 variables. We first cleaned our dataset to remove unnecessary units and some predictors with insufficient or miscellaneous values, and then cleaned rows which contain null values. 
+
+```{r}
+##Summary of our final dataset
+summary(ucar)
+```
+
+```{r}
+##See some of the significant predictors' mean value in the dataset 
+mean(ucar$Year)
+mean(ucar$Mileage)
+mean(ucar$Kilometers_Driven)
+```
+
+- We start our modeling process with a full additive model with backward aic for a good model determination. We checked the model assumption and found  constant variance and normality of errors are violated. We tried to fix the violation of the normality assumption, but it did not work according to test results. Next we developed a full first order and second order polynomial model with backward aic for a good model determination. We checked the model assumption of constant variance and normality of errors and found they are violated. Also, removing influential points does not fix the violations either just like the previous one. Finally, we integrated all variable selected from the above process into one integrated model, and repeated the above process for model assumption violations check and tried to fix the violations by removing influential points if there is any. We still found the model assumption of constant variance and normality of errors are violated.
+
+- Then we started model selection with comparing adjusted $R_2$ values and found the modified interaction model "int_back_aic2" is preferred due to the greatest adjusted $R_2$ value. We also calculated the LOOCV RMSE for each and found the modified polynomial model is a good model for prediction for its LOOCV RMSE. These two models both perform well, but we are interested in keeping models as small as possible, since smaller models are easier to interpret. So, our final model is "poly_back_aic2". 
+
+
+```{r,warning=FALSE,message=FALSE}
+## For our determined final model, lets see the predictors we have.
+length(coef(poly_back_aic2))
+names(coef(poly_back_aic2))
+```
+
+```{r}
+##Summary of our final chosen model 
+summary(poly_back_aic2)
+```
+
+Check how this model performs. 
+
+```{r,warning=FALSE,message=FALSE}
+par(mfrow = c(2, 2))
+plot(poly_back_aic2, col = "darkorange", lwd = 2)
+
+# Evaluation
+summary(poly_back_aic2)$adj.r.squared 
+calc_loocv_rmse(poly_back_aic2)
+
+#AIC
+extractAIC(poly_back_aic2)
+
+#BIC
+extractAIC(poly_back_aic2,k=log(nrow(ucar)))
+
+```
+
+
+```{r}
+##Using this model, let's predict the car price based on Year of 2015, Car Mileage of 20, Kilometers_Driven of 35000, Petrol Fuel Type, Manual Transmission, First Owner_Type, Engine of 1000, Power of 1000, and Seats of 5
+predict(poly_back_aic2, newdata = data.frame(Year = 2015, Mileage = 20, Kilometers_Driven = 35000, Fuel_Type = "Petrol", Transmission = "Manual", Owner_Type = "First", Engine = 1000, Power = 100, Seats = "5"))
+```
+
+
 
 ## Discussion
 For the 'integ_model', we observe that 'Mileage' would be the most important predictor.
@@ -260,7 +318,7 @@ analysis$`Pr(>F)`[2]
 As we known, the result is larger than $a = 0.05$. Therefore, we cannot reject the null!
 
 ## Appendix
-The following code is for `Price` vs numeric variables plots of the original data file.
+The follwoing code is for `Price` vs numeric variables plots of the original data file.
 ```{r,eval=FALSE}
 plot(Price ~ Kilometers_Driven, data = original, pch = 20, col = "darkgreen",main = "Price vs Kilometers_Driven", cex = 1)
 plot(Price ~ Power, data = original, pch = 20, col = "darkgreen", main = "Price vs Power", cex = 1)
@@ -277,3 +335,5 @@ qqline(resid(add_back_aic), col = "dodgerblue", lwd = 2)
 qqnorm(resid(add_back_aic2), main = "Normal Q-Q Plot After Removing Influential Points", col = "darkgrey")
 qqline(resid(add_back_aic2), col = "dodgerblue", lwd = 2)
 ```
+
+The contributors of this Stat 420 Final Project are Jiazhen Li, Yijun Zhao, Heming Huang, Hanwen Hu.
