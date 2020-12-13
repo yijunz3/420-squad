@@ -330,7 +330,6 @@ extractAIC(log_car_aic,k=log(nrow(ucar)))
 ```{r}
 ##Using this model, let's predict the car price based on Year of 2015, Car Mileage of 20, Kilometers_Driven of 35000, Petrol Fuel Type, Manual Transmission, First Owner_Type, Engine of 1000, Power of 1000, and Seats of 5
 exp(predict(log_car_aic, newdata = data.frame(Year = 2015, Mileage = 20, Kilometers_Driven = 35000, Fuel_Type = "Petrol", Transmission = "Manual", Owner_Type = "First", Engine = 1000, Power = 100, Seats = "5")))
-View(ucar)
 ```
 
 
