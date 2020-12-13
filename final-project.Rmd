@@ -96,6 +96,35 @@ ucar$Owner_Type = as.factor(ucar$Owner_Type)
 ucar$Seats = as.factor(ucar$Seats)
 ```
 
+We want to better understand what our dataset looks like before start building models.
+
+First we notice that our response variable Price has a right skew. A log transform can be used to adjust and normalize the distribution. 
+
+```{r}
+par(mfrow=c(1,2))
+hist(ucar$Price,main = "Price", xlab = 'Price',col = 'dodgerblue')
+hist(log(ucar$Price), main = "log(Price)", xlab = 'log(Price)', col = 'orange')
+
+```
+
+We also check the distributions of the numeric predictors and note that many of them become more normal after applying a log transformation.
+
+```{r}
+#extract the predictor names
+predictor = setdiff(colnames(ucar), c("Price"))
+
+numeric_var_count = length(which(sapply(ucar, is.numeric)))
+par(mfrow=c(ceiling(numeric_var_count*2 / 6),6), mar=c(1,2,1,2))
+for (p in predictor) {
+  if (is.numeric(ucar[[p]])) {
+    hist(ucar[[p]], main = p, xaxt='n', yaxt='n', col = 'dodgerblue')
+    hist(log(ucar[[p]]), main = paste0("log(",p,")"), xaxt='n', yaxt='n', col = 'orange')
+  }
+}
+```
+
+
+
 ### Model establishment 
 The modeling process can start with a full additive model with backward aic for a good model determination.
 ```{r}
@@ -129,7 +158,7 @@ qqline(resid(add_back_aic2), col = "dodgerblue", lwd = 2)
 shapiro.test(resid(add_back_aic2))
 bptest(add_back_aic2)
 ```
-As it can be seen from the above two Q-Q plots. Before removing the influential points, the Q-Q plot suggests severe violation of normality assumption, as the many points are far off the line. After removing the influential points, the Q-Q plot is slightly better, however the Shapiro-Wilk test still suggests a violation of normality, and Breusch-Pagan test also still shows a violation of constant variance.
+As it can be seen from the above two Q-Q plots. Before removing the influential points, the Q-Q plot suggests severe violation of normality assumption, as the many points are far off the line. After removing the influential points, the Shapiro-Wilk test still suggests a violation of normality, and Breusch-Pagan test also still shows a violation of constant variance.
 
 <br />
 
@@ -186,25 +215,38 @@ shapiro.test(resid(integ_model2))
 ```
 Since the p-value for both Breusch-Pagan test and Shapiro-Wilk test are very small, the model assumption of constant variance and normality of errors are violated. Also, removing influential points does not fix the violations either, as shown above.
 
-### Model Selection
-To begin with, we can use information from the summary() function to compare Adjusted $R_2$ values of the models. 
+### Transformation
+
+We have created different models, but many of them fails the Shapiro-Wilks and Breusch-Pagan tests. This suggests we might be able to achieve better results by applying some transformations to our the response and/or predictors.
+
+Based on the graphs in the *Additional Data Preparation* section above, it appears that our model would benefit from log transforming the response variable `Price`.
 
 ```{r}
-summary(car_add)$adj.r.squared
-summary(add_back_aic)$adj.r.squared
-summary(add_back_aic2)$adj.r.squared
-summary(car_poly)$adj.r.squared
-summary(poly_back_aic)$adj.r.squared
-summary(poly_back_aic2)$adj.r.squared
-summary(car_int)$adj.r.squared
-summary(int_back_aic)$adj.r.squared
-summary(int_back_aic2)$adj.r.squared
-summary(integ_model)$adj.r.squared
-summary(integ_model2)$adj.r.squared
+log_car = lm(log(Price) ~ ., data = ucar)
+log_car_aic = step(log_car, direction = "backward", trace = 0)
 ```
-Note that the modified interaction model "int_back_aic2" is preferred since it has the greatest adjusted $R_2$ value.
 
-We can also calculate the LOOCV RMSE for each,
+```{r}
+bptest(log_car_aic)
+shapiro.test(resid(log_car_aic))
+```
+
+We’ll try adding some polynomial transformations to the predictors, but also keep the log transform of the response:
+
+```{r}
+log_poly_car = lm(log(Price) ~ . +I(Kilometers_Driven^2) +I(Mileage^2) + I(Engine^2) +I(Power^2) , data = ucar)
+log_poly_aic = step(log_poly_car, direction = "backward", trace = 0)
+```
+
+```{r}
+bptest(log_poly_aic)
+shapiro.test(resid(log_poly_aic))
+```
+
+Since the model assumptions are still violated, we could continue log transforming some of the numeric predictors, but it will make the model more complicated and difficult to interpret. So we decide to stop here.
+
+### Model Selection
+To begin with, we calculate the LOOCV RMSE for each model:
 ```{r}
 calc_loocv_rmse = function(model) {
   sqrt(mean((resid(model) / (1 - hatvalues(model))) ^ 2))
@@ -212,28 +254,24 @@ calc_loocv_rmse = function(model) {
 ```
 
 ```{r}
-calc_loocv_rmse(car_add)
-calc_loocv_rmse(car_int)
-calc_loocv_rmse(car_poly)
 calc_loocv_rmse(add_back_aic2)
 calc_loocv_rmse(poly_back_aic2)
 calc_loocv_rmse(int_back_aic2)
 calc_loocv_rmse(add_back_aic)
 calc_loocv_rmse(poly_back_aic)
 calc_loocv_rmse(int_back_aic)
-calc_loocv_rmse(integ_model)
 calc_loocv_rmse(integ_model2)
+calc_loocv_rmse(log_car_aic)
+calc_loocv_rmse(log_poly_aic)
 ```
-We see that the modified polynomial model is a good model for prediction, since it achieves the smallest LOOCV RMSE, but may not be the best model for explanation.
+We see that the model `log_car_aic` is a good model for prediction, since it achieves the smallest LOOCV RMSE, but may not be the best model for explanation.
 
-Since the modified interaction model and the modified polynomial model are both of good performance, we are interested in keeping models as small as possible, since smaller models are easier to interpret. 
+To explain a relationship, we are interested in keeping models as small as possible, since smaller models are easy to interpret.
 
 ```{r}
-length(coef(int_back_aic2))
-length(coef(poly_back_aic2))
+length(coef(log_car_aic))
 ```
-
-Therefore, we would like to select the model "poly_back_aic2" as our final model.
+Therefore, we would like to select the model `log_car_aic` to be the final model, since it achieves the smallest LOOCV RMSE with 15 predictors, which is not a very large number.
 
 
 ## Results
@@ -254,44 +292,45 @@ mean(ucar$Mileage)
 mean(ucar$Kilometers_Driven)
 ```
 
-- We start our modeling process with a full additive model with backward aic for a good model determination. We checked the model assumption and found  constant variance and normality of errors are violated. We tried to fix the violation of the normality assumption, but it did not work according to test results. Next we developed a full first order and second order polynomial model with backward aic for a good model determination. We checked the model assumption of constant variance and normality of errors and found they are violated. Also, removing influential points does not fix the violations either just like the previous one. Finally, we integrated all variable selected from the above process into one integrated model, and repeated the above process for model assumption violations check and tried to fix the violations by removing influential points if there is any. We still found the model assumption of constant variance and normality of errors are violated.
+- We start our modeling process with a full additive model with backward aic for a good model determination. We checked the model assumption and found  constant variance and normality of errors are violated. We tried to fix the violation of the normality assumption, but it did not work according to test results. Next we developed a full first order and second order polynomial model with backward aic for a good model determination. We checked the model assumption of constant variance and normality of errors and found they are violated. Also, removing influential points does not fix the violations either just like the previous one. Finally, we integrated all variable selected from the above process into one integrated model, and repeated the above process for model assumption violations check and tried to fix the violations by removing influential points if there is any. However, although we have done log transformations on the model, which somehow improves our normality assumption, there are still violations existing.
 
-- Then we started model selection with comparing adjusted $R_2$ values and found the modified interaction model "int_back_aic2" is preferred due to the greatest adjusted $R_2$ value. We also calculated the LOOCV RMSE for each and found the modified polynomial model is a good model for prediction for its LOOCV RMSE. These two models both perform well, but we are interested in keeping models as small as possible, since smaller models are easier to interpret. So, our final model is "poly_back_aic2". 
+- Then we started model selection by comparing the LOOCV RMSE of models. We are interested in the model which can be used to predict, but is also small enough to interpret. Hence, our final model is "log_car_aic". 
 
 
 ```{r,warning=FALSE,message=FALSE}
 ## For our determined final model, lets see the predictors we have.
-length(coef(poly_back_aic2))
-names(coef(poly_back_aic2))
+length(coef(log_car_aic))
+names(coef(log_car_aic))
 ```
 
 ```{r}
 ##Summary of our final chosen model 
-summary(poly_back_aic2)
+summary(log_car_aic)
 ```
 
 Check how this model performs. 
 
 ```{r,warning=FALSE,message=FALSE}
 par(mfrow = c(2, 2))
-plot(poly_back_aic2, col = "darkorange", lwd = 2)
+plot(log_car_aic, col = "darkorange", lwd = 2)
 
 # Evaluation
-summary(poly_back_aic2)$adj.r.squared 
-calc_loocv_rmse(poly_back_aic2)
+summary(log_car_aic)$adj.r.squared 
+calc_loocv_rmse(log_car_aic)
 
 #AIC
-extractAIC(poly_back_aic2)
+extractAIC(log_car_aic)
 
 #BIC
-extractAIC(poly_back_aic2,k=log(nrow(ucar)))
+extractAIC(log_car_aic,k=log(nrow(ucar)))
 
 ```
 
 
 ```{r}
 ##Using this model, let's predict the car price based on Year of 2015, Car Mileage of 20, Kilometers_Driven of 35000, Petrol Fuel Type, Manual Transmission, First Owner_Type, Engine of 1000, Power of 1000, and Seats of 5
-predict(poly_back_aic2, newdata = data.frame(Year = 2015, Mileage = 20, Kilometers_Driven = 35000, Fuel_Type = "Petrol", Transmission = "Manual", Owner_Type = "First", Engine = 1000, Power = 100, Seats = "5"))
+exp(predict(log_car_aic, newdata = data.frame(Year = 2015, Mileage = 20, Kilometers_Driven = 35000, Fuel_Type = "Petrol", Transmission = "Manual", Owner_Type = "First", Engine = 1000, Power = 100, Seats = "5")))
+View(ucar)
 ```
 
 
