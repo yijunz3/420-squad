@@ -239,6 +239,25 @@ Therefore, we would like to select the model "poly_back_aic2" as our final model
 ## Results
 
 ## Discussion
+For the 'integ_model', we observe that 'Mileage' would be the most important predictor.
+```{r}
+integ_aic = step(integ_model, trace = 0)
+coef(summary(integ_aic))['Mileage',]
+```
+
+Significant Predictors
+```{r}
+sum(summary(integ_aic)$coefficients[ ,4] < 0.05)/length(coef(integ_aic))
+summary(integ_aic)$coefficients[summary(integ_aic)$coefficients[ ,4] < 0.05,]
+summary(integ_aic)$r.squared
+```
+
+```{r}
+analysis = anova(integ_aic, integ_model, test = "F")
+analysis$`Pr(>F)`[2]
+```
+
+As we known, the result is larger than $a = 0.05$. Therefore, we cannot reject the null!
 
 ## Appendix
 The following code is for `Price` vs numeric variables plots of the original data file.
