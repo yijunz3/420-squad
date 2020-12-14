@@ -344,28 +344,28 @@ extractAIC(log_car_aic,k=log(nrow(ucar)))
 exp(predict(log_car_aic, newdata = data.frame(Year = 2015, Mileage = 20, Kilometers_Driven = 35000, Fuel_Type = "Petrol", Transmission = "Manual", Owner_Type = "First", Engine = 1000, Power = 100, Seats = "5")))
 ```
 
-
-
 ## Discussion
-For the 'integ_model', we observe that 'Mileage' would be the most important predictor.
+For the 'log_add_aic', we observe that 'Mileage' would be the most important predictor.
 ```{r}
-integ_aic = step(integ_model, trace = 0)
-coef(summary(integ_aic))['Mileage',]
+log_car = lm(log(Price) ~ ., data = ucar)
+log_car_aic = step(log_car, direction = "backward", trace = 0)
+coef(summary(log_car_aic))['Mileage',]
+coef(summary(log_car_aic))['Power',]
+coef(summary(log_car_aic))['Engine',]
 ```
 
 Significant Predictors
 ```{r}
-sum(summary(integ_aic)$coefficients[ ,4] < 0.05)/length(coef(integ_aic))
-summary(integ_aic)$coefficients[summary(integ_aic)$coefficients[ ,4] < 0.05,]
-summary(integ_aic)$r.squared
+sum(summary(log_car_aic)$coefficients[ ,4] < 0.05)/length(coef(log_car_aic))
+summary(log_car_aic)$coefficients[summary(log_car_aic)$coefficients[ ,4] < 0.05,]
+summary(log_car_aic)$r.squared
 ```
 
 ```{r}
-analysis = anova(integ_aic, integ_model, test = "F")
-analysis$`Pr(>F)`[2]
+anova(log_car_aic, log_car, test = "F")
 ```
 
-As we known, the result is larger than $a = 0.05$. Therefore, we cannot reject the null!
+As we known, the result is too small and roughly equivalent to 0. It is smaller than $a = 0.05$. Therefore, we reject the null.
 
 ## Appendix
 The following code is for `Price` vs numeric variables plots of the original data file.
