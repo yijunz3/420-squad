@@ -246,32 +246,39 @@ shapiro.test(resid(log_poly_aic))
 Since the model assumptions are still violated, we could continue log transforming some of the numeric predictors, but it will make the model more complicated and difficult to interpret. So we decide to stop here.
 
 ### Model Selection
-To begin with, we calculate the LOOCV RMSE for each model:
+To begin with, we calculate the LOOCV RMSE and the number of predictors for each model:
 ```{r}
 calc_loocv_rmse = function(model) {
   sqrt(mean((resid(model) / (1 - hatvalues(model))) ^ 2))
 }
+
+evaluate_model = function(name, model) {
+  data.frame(Model = name,
+             Predictor = length(coef(model)),
+             LOOCV.RMSE = calc_loocv_rmse(model) , 
+             Adj.R2 = summary(model)$adj.r.squared
+             )
+}
 ```
 
 ```{r}
-calc_loocv_rmse(add_back_aic2)
-calc_loocv_rmse(poly_back_aic2)
-calc_loocv_rmse(int_back_aic2)
-calc_loocv_rmse(add_back_aic)
-calc_loocv_rmse(poly_back_aic)
-calc_loocv_rmse(int_back_aic)
-calc_loocv_rmse(integ_model2)
-calc_loocv_rmse(log_car_aic)
-calc_loocv_rmse(log_poly_aic)
+knitr::kable(evaluate_model("add_back_aic",add_back_aic))
+knitr::kable(evaluate_model("add_back_aic2",add_back_aic2))
+knitr::kable(evaluate_model("poly_back_aic2",poly_back_aic2))
+knitr::kable(evaluate_model("poly_back_aic",add_back_aic))
+knitr::kable(evaluate_model("int_back_aic2",int_back_aic2))
+knitr::kable(evaluate_model("int_back_aic",add_back_aic))
+knitr::kable(evaluate_model("integ_model",integ_model))
+knitr::kable(evaluate_model("integ_model2",integ_model2))
+knitr::kable(evaluate_model("log_car_aic",log_car_aic))
+knitr::kable(evaluate_model("log_poly-aic",log_poly_aic))
 ```
+
 We see that the model `log_car_aic` is a good model for prediction, since it achieves the smallest LOOCV RMSE, but may not be the best model for explanation.
 
 To explain a relationship, we are interested in keeping models as small as possible, since smaller models are easy to interpret.
 
-```{r}
-length(coef(log_car_aic))
-```
-Therefore, we would like to select the model `log_car_aic` to be the final model, since it achieves the smallest LOOCV RMSE with 15 predictors, which is not a very large number.
+Therefore, we would like to select the model `log_car_aic` to be the final model, since it achieves the smallest LOOCV RMSE and a relatively large adjusted $R^2$ value with 15 predictors, which is not a very big number.
 
 
 ## Results
