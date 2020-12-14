@@ -229,9 +229,11 @@ log_car_aic = step(log_car, direction = "backward", trace = 0)
 ```{r}
 bptest(log_car_aic)
 shapiro.test(resid(log_car_aic))
+qqnorm(resid(log_car_aic), main = "Normal Q-Q Plot After log transforming", col = "darkgrey")
+qqline(resid(log_car_aic), col = "dodgerblue", lwd = 2)
 ```
 
-We’ll try adding some polynomial transformations to the predictors, but also keep the log transform of the response:
+Although model assumptions are still violated, we can observe from the Q-Q plot that log transforming improves the normality. Next, we’ll try adding some polynomial transformations to the predictors, but also keep the log transform of the response:
 
 ```{r}
 log_poly_car = lm(log(Price) ~ . +I(Kilometers_Driven^2) +I(Mileage^2) + I(Engine^2) +I(Power^2) , data = ucar)
@@ -246,7 +248,10 @@ shapiro.test(resid(log_poly_aic))
 Since the model assumptions are still violated, we could continue log transforming some of the numeric predictors, but it will make the model more complicated and difficult to interpret. So we decide to stop here.
 
 ### Model Selection
-To begin with, we calculate the LOOCV RMSE and the number of predictors for each model:
+We select the "best" model by comparing the LOOCV RMSE value, the adjusted $R^2$ value and the number of predictors each model contains.
+
+A model of good performance in both prediction and explanation should have a relatively low LOOCV RMSE value, a relatively high adjusted $R^2$ value, and a relatively small number of predictors.
+
 ```{r}
 calc_loocv_rmse = function(model) {
   sqrt(mean((resid(model) / (1 - hatvalues(model))) ^ 2))
@@ -363,7 +368,7 @@ analysis$`Pr(>F)`[2]
 As we known, the result is larger than $a = 0.05$. Therefore, we cannot reject the null!
 
 ## Appendix
-The follwoing code is for `Price` vs numeric variables plots of the original data file.
+The following code is for `Price` vs numeric variables plots of the original data file.
 ```{r,eval=FALSE}
 plot(Price ~ Kilometers_Driven, data = original, pch = 20, col = "darkgreen",main = "Price vs Kilometers_Driven", cex = 1)
 plot(Price ~ Power, data = original, pch = 20, col = "darkgreen", main = "Price vs Power", cex = 1)
