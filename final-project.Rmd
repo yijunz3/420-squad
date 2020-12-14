@@ -365,7 +365,7 @@ summary(log_car_aic)$r.squared
 anova(log_car_aic, log_car, test = "F")
 ```
 
-As we known, the result is too small and roughly equivalent to 0. It is smaller than $a = 0.05$. Therefore, we reject the null.
+The p-value of the F test is smaller than $a = 0.05$. Therefore, we should reject the null and conclude that the model is significant in full for explaining used cars' prices.
 
 ## Appendix
 The following code is for `Price` vs numeric variables plots of the original data file.
