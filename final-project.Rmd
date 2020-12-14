@@ -345,7 +345,7 @@ exp(predict(log_car_aic, newdata = data.frame(Year = 2015, Mileage = 20, Kilomet
 ```
 
 ## Discussion
-For the 'log_add_aic', we observe that 'Mileage' would be the most important predictor.
+For the 'log_add_aic', we observe that 'Mileage' would be the most important predictor among some other significant variables.
 ```{r}
 log_car = lm(log(Price) ~ ., data = ucar)
 log_car_aic = step(log_car, direction = "backward", trace = 0)
@@ -357,15 +357,23 @@ coef(summary(log_car_aic))['Engine',]
 Significant Predictors
 ```{r}
 sum(summary(log_car_aic)$coefficients[ ,4] < 0.05)/length(coef(log_car_aic))
-summary(log_car_aic)$coefficients[summary(log_car_aic)$coefficients[ ,4] < 0.05,]
 summary(log_car_aic)$r.squared
 ```
+This means 86.67% of the predictors are significant tested by the t-test at $a = 0.05$ level. Also, the model has a good multiple R-Square of 0.871, meaning 87.1% of changes in used car's price data is explained by the model.
 
+Now, let's take a look at the variables again.
 ```{r}
-anova(log_car_aic, log_car, test = "F")
+summary(log_car_aic)$coefficients
 ```
+At $a = 0.05$ level, Kilometers_Driven is not significant is a surprise to us, and the reason may be that these cars are usually durable for a long time.
 
-The p-value of the F test is smaller than $a = 0.05$. Therefore, we should reject the null and conclude that the model is significant in full for explaining used cars' prices.
+Fuel_Type, Transmission, and most Owner_Type are significant, and it is reasonable because they are related to the cost after purchase, the convenience of operations, and resale value respectively. We can also see people in India prefer Diesel, automation, and first-hand cars.
+
+Mileage, Engine volume, and power are major factors affecting a car's performance, so it is sensible that they are also significant. The more mileage a car has run, the lower value it is predicted to have. Engine volume and power have a positive relationship with the prices.
+
+The number of Seat influences the usage of the car, the more seats it has, the more people it can carry, then the significance of Seats is reasonable.
+
+The final issue of the log_car_aic model is that the violations of assumptions cannot be fixed no matter what we have done. On the one hand, a guess of the reason may be that the original data we use has some undetected problems. On the other hand, removing too much data will result in the model losing enough explanatory power. Thus, we decided not to go further in fixing the violations of the assumptions. However, we do see the assumptions get better than before both after removing influential points and transformation, which certainly makes this model stronger in explaining the subject.
 
 ## Appendix
 The following code is for `Price` vs numeric variables plots of the original data file.
